@@ -1,0 +1,28 @@
+{
+  "cli": {
+    "version": ">= 12.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "apk": {
+      "android": {
+        "buildType": "apk"
+      },
+      "distribution": "internal",
+      "env": {
+        "EXPO_NO_CAPITALIZE_ENV_VARS": "1"
+      },
+      "credentialsSource": "remote"
+    },
+    "production": {}
+  },
+  "submit": {
+    "production": {}
+  }
+}

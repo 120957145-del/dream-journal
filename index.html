@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>梦记 - DreamJournal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #1a1a2e;
+            color: #fff;
+            min-height: 100vh;
+            padding-bottom: 100px;
+        }
+
+        .header {
+            background: #16213e;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #0f3460;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: #e94560;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        .search-box {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            border: 1px solid #0f3460;
+        }
+
+        .search-box input {
+            flex: 1;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            margin-left: 10px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #e94560;
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background: #0f3460;
+            color: #fff;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .dream-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .dream-card {
+            background: #16213e;
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid #0f3460;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .dream-card:active {
+            transform: scale(0.98);
+        }
+
+        .dream-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .dream-title {
+            font-size: 18px;
+            font-weight: bold;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .dream-date {
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .dream-content {
+            color: #ddd;
+            font-size: 14px;
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .tag {
+            background: #0f3460;
+            color: #e94560;
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .empty-text {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .empty-subtext {
+            color: #888;
+            font-size: 15px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #1a1a2e;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: block;
+        }
+
+        .modal-header {
+            background: #16213e;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #0f3460;
+            position: sticky;
+            top: 0;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0 10px;
+        }
+
+        .modal-content {
+            padding: 20px;
+            padding-bottom: 100px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 12px;
+            padding: 14px 16px;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .form-textarea {
+            min-height: 150px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .mood-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .mood-option {
+            flex: 1;
+            min-width: 30%;
+            text-align: center;
+            padding: 16px;
+            background: #16213e;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mood-option.selected {
+            border-color: #e94560;
+            background: #0f3460;
+        }
+
+        .mood-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .mood-label {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .mood-option.selected .mood-label {
+            color: #e94560;
+            font-weight: 600;
+        }
+
+        .toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            background: #16213e;
+            border: 2px solid #0f3460;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .toggle.active {
+            border-color: #ffd700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .toggle-text {
+            color: #888;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .toggle.active .toggle-text {
+            color: #ffd700;
+        }
+
+        .tag-input-container {
+            display: flex;
+            gap: 12px;
+        }
+
+        .tag-input {
+            flex: 1;
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 12px;
+            padding: 14px 16px;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .add-tag-btn {
+            background: #e94560;
+            border: none;
+            border-radius: 12px;
+            padding: 0 16px;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .tag-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #0f3460;
+            padding: 8px 12px;
+            border-radius: 20px;
+        }
+
+        .tag-item-text {
+            color: #e94560;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .tag-remove {
+            background: none;
+            border: none;
+            color: #e94560;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .modal-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1a1a2e;
+            padding: 16px;
+            display: flex;
+            gap: 12px;
+            border-top: 1px solid #0f3460;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            background: #16213e;
+            color: #fff;
+        }
+
+        .btn-save {
+            flex: 2;
+            background: #e94560;
+            color: #fff;
+        }
+
+        .btn-delete {
+            background: #dc2626;
+        }
+
+        /* Detail view */
+        .detail-header {
+            margin-bottom: 20px;
+        }
+
+        .detail-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .detail-date {
+            color: #888;
+            font-size: 15px;
+        }
+
+        .detail-meta {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #16213e;
+            padding: 8px 12px;
+            border-radius: 20px;
+        }
+
+        .meta-item.lucid {
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .meta-icon {
+            font-size: 18px;
+        }
+
+        .meta-text {
+            color: #fff;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .meta-item.lucid .meta-text {
+            color: #ffd700;
+        }
+
+        .detail-content {
+            background: #16213e;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .detail-content-text {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌙 梦记</h1>
+    </div>
+
+    <div class="container">
+        <div class="search-box">
+            <span>🔍</span>
+            <input type="text" id="searchInput" placeholder="搜索梦境..." oninput="searchDreams()">
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" onclick="openAddModal()">
+                <span>➕</span> 记录梦境
+            </button>
+            <button class="btn btn-secondary" onclick="showCalendar()">
+                <span>📅</span> 日历
+            </button>
+        </div>
+
+        <div id="dreamList" class="dream-list"></div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div id="addModal" class="modal">
+        <div class="modal-header">
+            <span class="modal-title" id="addModalTitle">记录梦境</span>
+            <button class="close-btn" onclick="closeAddModal()">&times;</button>
+        </div>
+        <div class="modal-content">
+            <div class="form-group">
+                <label class="form-label">梦境标题</label>
+                <input type="text" class="form-input" id="dreamTitle" placeholder="给你的梦起个名字...">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">梦境内容</label>
+                <textarea class="form-textarea" id="dreamContent" placeholder="描述你的梦境..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">心情</label>
+                <div class="mood-selector" id="moodSelector">
+                    <div class="mood-option" data-mood="great" onclick="selectMood('great')">
+                        <div class="mood-icon">😊</div>
+                        <div class="mood-label">很棒</div>
+                    </div>
+                    <div class="mood-option" data-mood="good" onclick="selectMood('good')">
+                        <div class="mood-icon">🙂</div>
+                        <div class="mood-label">不错</div>
+                    </div>
+                    <div class="mood-option" data-mood="neutral" onclick="selectMood('neutral')">
+                        <div class="mood-icon">😐</div>
+                        <div class="mood-label">一般</div>
+                    </div>
+                    <div class="mood-option" data-mood="bad" onclick="selectMood('bad')">
+                        <div class="mood-icon">😔</div>
+                        <div class="mood-label">不好</div>
+                    </div>
+                    <div class="mood-option" data-mood="terrible" onclick="selectMood('terrible')">
+                        <div class="mood-icon">😢</div>
+                        <div class="mood-label">糟糕</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="toggle" id="lucidToggle" onclick="toggleLucid()">
+                    <span class="toggle-text">✨ 这是清醒梦</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">标签</label>
+                <div class="tag-input-container">
+                    <input type="text" class="tag-input" id="tagInput" placeholder="添加标签..." onkeypress="handleTagKeypress(event)">
+                    <button class="add-tag-btn" onclick="addTag()">+</button>
+                </div>
+                <div class="tag-list" id="tagList"></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-cancel" onclick="closeAddModal()">取消</button>
+            <button class="btn btn-save" onclick="saveDream()">保存</button>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div id="detailModal" class="modal">
+        <div class="modal-header">
+            <span class="modal-title">梦境详情</span>
+            <button class="close-btn" onclick="closeDetailModal()">&times;</button>
+        </div>
+        <div class="modal-content" id="detailContent"></div>
+        <div class="modal-footer">
+            <button class="btn btn-cancel" onclick="editDream()">编辑</button>
+            <button class="btn btn-save btn-delete" onclick="deleteDream()">删除</button>
+        </div>
+    </div>
+
+    <script>
+        let dreams = [];
+        let editingId = null;
+        let currentMood = 'neutral';
+        let isLucid = false;
+        let currentTags = [];
+
+        // Load dreams from localStorage
+        function loadDreams() {
+            const stored = localStorage.getItem('dreamjournal_dreams');
+            if (stored) {
+                dreams = JSON.parse(stored);
+            }
+            renderDreams();
+        }
+
+        // Save dreams to localStorage
+        function saveDreams() {
+            localStorage.setItem('dreamjournal_dreams', JSON.stringify(dreams));
+        }
+
+        // Render dream list
+        function renderDreams(filter = '') {
+            const list = document.getElementById('dreamList');
+            let filteredDreams = dreams;
+
+            if (filter) {
+                const lowerFilter = filter.toLowerCase();
+                filteredDreams = dreams.filter(d => 
+                    d.title.toLowerCase().includes(lowerFilter) ||
+                    d.content.toLowerCase().includes(lowerFilter) ||
+                    d.tags.some(t => t.toLowerCase().includes(lowerFilter))
+                );
+            }
+
+            if (filteredDreams.length === 0) {
+                list.innerHTML = `
+                    <div class="empty">
+                        <div class="empty-icon">🌙</div>
+                        <div class="empty-text">${filter ? '没有找到相关梦境' : '还没有记录任何梦境'}</div>
+                        <div class="empty-subtext">${filter ? '试试其他关键词' : '点击上方按钮开始记录'}</div>
+                    </div>
+                `;
+                return;
+            }
+
+            const moodIcons = {
+                great: '😊',
+                good: '🙂',
+                neutral: '😐',
+                bad: '😔',
+                terrible: '😢'
+            };
+
+            list.innerHTML = filteredDreams.map(dream => `
+                <div class="dream-card" onclick="openDetail('${dream.id}')">
+                    <div class="dream-header">
+                        <div class="dream-title">${escapeHtml(dream.title)}</div>
+                        <span>${moodIcons[dream.mood]}</span>
+                    </div>
+                    <div class="dream-date">${formatDate(dream.date)}</div>
+                    <div class="dream-content">${escapeHtml(dream.content)}</div>
+                    ${dream.tags.length > 0 ? `
+                        <div class="tags">
+                            ${dream.tags.slice(0, 3).map(tag => `<span class="tag">#${escapeHtml(tag)}</span>`).join('')}
+                            ${dream.tags.length > 3 ? `<span style="color:#888;font-size:13px;">+${dream.tags.length - 3}</span>` : ''}
+                        </div>
+                    ` : ''}
+                    ${dream.isLucid ? '<div style="position:absolute;top:12px;right:12px;background:#ffd700;color:#1a1a2e;padding:4px 8px;border-radius:12px;font-size:12px;font-weight:bold;">✨ 清醒梦</div>' : ''}
+                </div>
+            `).join('');
+        }
+
+        // Search dreams
+        function searchDreams() {
+            const query = document.getElementById('searchInput').value;
+            renderDreams(query);
+        }
+
+        // Open add modal
+        function openAddModal() {
+            editingId = null;
+            document.getElementById('addModalTitle').textContent = '记录梦境';
+            document.getElementById('dreamTitle').value = '';
+            document.getElementById('dreamContent').value = '';
+            currentMood = 'neutral';
+            isLucid = false;
+            currentTags = [];
+            updateMoodUI();
+            updateLucidUI();
+            renderTags();
+            document.getElementById('addModal').classList.add('active');
+        }
+
+        // Close add modal
+        function closeAddModal() {
+            document.getElementById('addModal').classList.remove('active');
+        }
+
+        // Select mood
+        function selectMood(mood) {
+            currentMood = mood;
+            updateMoodUI();
+        }
+
+        function updateMoodUI() {
+            document.querySelectorAll('.mood-option').forEach(el => {
+                el.classList.toggle('selected', el.dataset.mood === currentMood);
+            });
+        }
+
+        // Toggle lucid dream
+        function toggleLucid() {
+            isLucid = !isLucid;
+            updateLucidUI();
+        }
+
+        function updateLucidUI() {
+            document.getElementById('lucidToggle').classList.toggle('active', isLucid);
+        }
+
+        // Add tag
+        function addTag() {
+            const input = document.getElementById('tagInput');
+            const tag = input.value.trim();
+            if (tag && !currentTags.includes(tag)) {
+                currentTags.push(tag);
+                renderTags();
+            }
+            input.value = '';
+        }
+
+        function handleTagKeypress(e) {
+            if (e.key === 'Enter') {
+                addTag();
+            }
+        }
+
+        function removeTag(tag) {
+            currentTags = currentTags.filter(t => t !== tag);
+            renderTags();
+        }
+
+        function renderTags() {
+            const list = document.getElementById('tagList');
+            list.innerHTML = currentTags.map(tag => `
+                <div class="tag-item">
+                    <span class="tag-item-text">#${escapeHtml(tag)}</span>
+                    <button class="tag-remove" onclick="removeTag('${escapeHtml(tag)}')">&times;</button>
+                </div>
+            `).join('');
+        }
+
+        // Save dream
+        function saveDream() {
+            const title = document.getElementById('dreamTitle').value.trim();
+            const content = document.getElementById('dreamContent').value.trim();
+
+            if (!title) {
+                alert('请输入梦境标题');
+                return;
+            }
+            if (!content) {
+                alert('请输入梦境内容');
+                return;
+            }
+
+            if (editingId) {
+                const index = dreams.findIndex(d => d.id === editingId);
+                if (index !== -1) {
+                    dreams[index] = {
+                        ...dreams[index],
+                        title,
+                        content,
+                        mood: currentMood,
+                        isLucid,
+                        tags: currentTags
+                    };
+                }
+            } else {
+                const dream = {
+                    id: Date.now().toString(),
+                    title,
+                    content,
+                    date: new Date().toISOString(),
+                    mood: currentMood,
+                    isLucid,
+                    tags: currentTags
+                };
+                dreams.unshift(dream);
+            }
+
+            saveDreams();
+            renderDreams();
+            closeAddModal();
+        }
+
+        // Open detail
+        function openDetail(id) {
+            const dream = dreams.find(d => d.id === id);
+            if (!dream) return;
+
+            const moodIcons = {
+                great: '😊',
+                good: '🙂',
+                neutral: '😐',
+                bad: '😔',
+                terrible: '😢'
+            };
+
+            const moodLabels = {
+                great: '很棒',
+                good: '不错',
+                neutral: '一般',
+                bad: '不好',
+                terrible: '糟糕'
+            };
+
+            document.getElementById('detailContent').innerHTML = `
+                <div class="detail-header">
+                    <div class="detail-title">${escapeHtml(dream.title)}</div>
+                    <div class="detail-date">${formatDateFull(dream.date)}</div>
+                </div>
+                <div class="detail-meta">
+                    <div class="meta-item">
+                        <span class="meta-icon">${moodIcons[dream.mood]}</span>
+                        <span class="meta-text">${moodLabels[dream.mood]}</span>
+                    </div>
+                    ${dream.isLucid ? `
+                        <div class="meta-item lucid">
+                            <span class="meta-icon">✨</span>
+                            <span class="meta-text">清醒梦</span>
+                        </div>
+                    ` : ''}
+                </div>
+                ${dream.tags.length > 0 ? `
+                    <div class="tags">
+                        ${dream.tags.map(tag => `<span class="tag">#${escapeHtml(tag)}</span>`).join('')}
+                    </div>
+                    <br>
+                ` : ''}
+                <div class="detail-content">
+                    <div class="detail-content-text">${escapeHtml(dream.content).replace(/\n/g, '<br>')}</div>
+                </div>
+            `;
+
+            window.currentDreamId = dream.id;
+            document.getElementById('detailModal').classList.add('active');
+        }
+
+        // Close detail modal
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.remove('active');
+        }
+
+        // Edit dream
+        function editDream() {
+            const dream = dreams.find(d => d.id === window.currentDreamId);
+            if (!dream) return;
+
+            closeDetailModal();
+
+            editingId = dream.id;
+            document.getElementById('addModalTitle').textContent = '编辑梦境';
+            document.getElementById('dreamTitle').value = dream.title;
+            document.getElementById('dreamContent').value = dream.content;
+            currentMood = dream.mood;
+            isLucid = dream.isLucid;
+            currentTags = [...dream.tags];
+            updateMoodUI();
+            updateLucidUI();
+            renderTags();
+            document.getElementById('addModal').classList.add('active');
+        }
+
+        // Delete dream
+        function deleteDream() {
+            if (!confirm('确定要删除这个梦境吗？此操作无法撤销。')) return;
+
+            dreams = dreams.filter(d => d.id !== window.currentDreamId);
+            saveDreams();
+            renderDreams();
+            closeDetailModal();
+        }
+
+        // Calendar (placeholder)
+        function showCalendar() {
+            alert('日历功能 coming soon！现在先用来列表记录吧～');
+        }
+
+        // Utils
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                weekday: 'long'
+            });
+        }
+
+        function formatDateFull(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                weekday: 'long',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Initialize
+        loadDreams();
+    </script>
+</body>
+</html>
